@@ -1,0 +1,54 @@
+---
+title: "Predicton Model on Weight Lifting Exercises dataset"
+author: "Chao-Yu Cheng"
+date: "Sunday, December 20, 2015"
+output: html_document
+---
+
+### Pre-process data
+We are going to use "caret" and "randomForest" packages
+
+```{r}
+library(caret)
+library(randomForest)
+```
+
+Loading the training and testng datasets
+```{r}
+pmlTraining <- read.csv("pml-training.csv")
+pmlTesting <- read.csv("pml-testing.csv")
+```
+
+By observing the dataset, we are seeing lots of NA values and non-numeric columns. We choose only the columns with numeric values as below:
+
+```{r}
+plmTrain1 <- subset(pmlTraining, select=c(classe, roll_belt, pitch_belt, yaw_belt, total_accel_belt, gyros_belt_x, gyros_belt_y, gyros_belt_z, accel_belt_x, accel_belt_y, accel_belt_z, magnet_belt_x, magnet_belt_y, magnet_belt_z, roll_arm, pitch_arm, yaw_arm, total_accel_arm, gyros_arm_x, gyros_arm_y, gyros_arm_z, accel_arm_x, accel_arm_y, accel_arm_z, magnet_arm_x, magnet_arm_y, magnet_arm_z, roll_dumbbell, pitch_dumbbell, yaw_dumbbell, total_accel_arm, total_accel_dumbbell, gyros_dumbbell_x, gyros_dumbbell_y, gyros_dumbbell_z, accel_dumbbell_x, accel_dumbbell_y, accel_dumbbell_z, magnet_dumbbell_x, magnet_dumbbell_y, magnet_dumbbell_z, roll_forearm, pitch_forearm, yaw_forearm, total_accel_forearm, gyros_forearm_x, gyros_forearm_y, gyros_forearm_z, accel_forearm_x, accel_forearm_y, accel_forearm_z, magnet_forearm_x, magnet_forearm_y, magnet_forearm_z))
+
+plmTest1 <- subset(pmlTesting, select=c(roll_belt, pitch_belt, yaw_belt, total_accel_belt, gyros_belt_x, gyros_belt_y, gyros_belt_z, accel_belt_x, accel_belt_y, accel_belt_z, magnet_belt_x, magnet_belt_y, magnet_belt_z, roll_arm, pitch_arm, yaw_arm, total_accel_arm, gyros_arm_x, gyros_arm_y, gyros_arm_z, accel_arm_x, accel_arm_y, accel_arm_z, magnet_arm_x, magnet_arm_y, magnet_arm_z, roll_dumbbell, pitch_dumbbell, yaw_dumbbell, total_accel_arm, total_accel_dumbbell, gyros_dumbbell_x, gyros_dumbbell_y, gyros_dumbbell_z, accel_dumbbell_x, accel_dumbbell_y, accel_dumbbell_z, magnet_dumbbell_x, magnet_dumbbell_y, magnet_dumbbell_z, roll_forearm, pitch_forearm, yaw_forearm, total_accel_forearm, gyros_forearm_x, gyros_forearm_y, gyros_forearm_z, accel_forearm_x, accel_forearm_y, accel_forearm_z, magnet_forearm_x, magnet_forearm_y, magnet_forearm_z))
+```
+
+### How to build the model - use the random forest model
+```{r}
+set.seed(24248)
+fitRfModel <- randomForest(classe ~ ., plmTrain1)
+plot(fitRfModel)
+```
+
+### How to use cross validation
+We simply apply the test data set to the fitted random forest model as below. We are not able to tell if the output are correct results.
+
+```{r}
+predict(fitRfModel, newdata=plmTest1)
+```
+
+### What is the expected out of sample error
+We don't know what is the out of sample error rate. However, we can predict it by applying the confusion matrix on the training set: 95% confidence interval (0.9998, 1) fo accuracy. (see below output of confusionMatrix)
+
+```{r}
+pp40 <- predict(fitRfModel, newdata=plmTrain1)
+confusionMatrix(pp40, plmTrain1$classe)
+```
+
+### Why I made the choice
+By the accuracy rate of confusionMatrix ouput in the last section, we can very accurately predict the correct style of weight lifting exercises from their device data by the random forest model.
+
